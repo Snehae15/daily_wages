@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "270117527240",
+    "project_id": "daily-wages-87775",
+    "storage_bucket": "daily-wages-87775.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:270117527240:android:5a9e9c57857cff8757cffd",
+        "android_client_info": {
+          "package_name": "com.example.daily_wage"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCJSy0kdZXvMdUd5JoU9LNYJyLvBhzfmpI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
