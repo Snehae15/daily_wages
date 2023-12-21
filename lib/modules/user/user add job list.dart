@@ -1,33 +1,57 @@
-import 'package:daily_wage/modules/user/posted%20job%20deatils%20view.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:daily_wage/modules/user/View%20Posted%20Job%20Details.dart';
 import 'package:daily_wage/modules/user/user%20add%20job.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class UserAddJob extends StatelessWidget {
-  const UserAddJob({super.key});
+  const UserAddJob({Key? key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Add Job'),
+        title: const Text('Jobs'),
         backgroundColor: const Color(0xFFF7F1E1),
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            // Add your form fields or any content related to adding a job
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              StreamBuilder<QuerySnapshot>(
+                stream: FirebaseFirestore.instance
+                    .collection('add_job')
+                    .snapshots(),
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) {
+                    return const CircularProgressIndicator();
+                  }
 
-            // Example card with job details
-            _buildJobCard(
-              context,
-              jobType: 'Example Job Type',
-              jobDate: '2023-01-01', // Replace with the actual date format
-              workingHour: '12:00 PM', // Replace with the actual time format
-              amount: '100',
-            ),
-          ],
+                  final jobCards = snapshot.data!.docs.map((doc) {
+                    final data = doc.data() as Map<String, dynamic>;
+                    return _buildJobCard(
+                      context,
+                      docId: doc.id,
+                      jobName: data['jobName'],
+                      place: data['place'],
+                      workingDate: (data['workingDate'] as Timestamp).toDate(),
+                      endingDate: (data['endingDate'] as Timestamp).toDate(),
+                      workingTime: data['workingTime'],
+                      workingDays: data['workingDays'],
+                      amount: data['amount']?.toDouble() ?? 0.0,
+                    );
+                  }).toList();
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: jobCards,
+                  );
+                },
+              ),
+            ],
+          ),
         ),
       ),
       floatingActionButton: FloatingActionButton(
@@ -47,27 +71,90 @@ class UserAddJob extends StatelessWidget {
     );
   }
 
-  void _navigateToViewPostedJobDetails(BuildContext context, String jobType,
-      String jobDate, String workingHour, String amount) {
+  void _navigateToViewPostedJobDetails(
+    BuildContext context,
+    String docId,
+    String jobName,
+    String place,
+    DateTime workingDate,
+    DateTime endingDate,
+    String workingTime,
+    String workingDays,
+    double amount,
+  ) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const ViewpostedJobdetails(),
+        builder: (context) => ViewPostedJobDetails(
+          docId: docId,
+          jobName: jobName,
+          place: place,
+          workingDate: workingDate,
+          endingDate: endingDate,
+          workingTime: workingTime,
+          workingDays: workingDays,
+          amount: amount,
+        ),
       ),
     );
   }
 
+  Future<void> _showDeleteConfirmationDialog(
+      BuildContext context, String docId) async {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Delete Job'),
+          content: const Text('Are you sure you want to delete this job?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                _deleteJob(docId);
+                Navigator.of(context).pop();
+              },
+              child: const Text('Delete'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _deleteJob(String docId) {
+    FirebaseFirestore.instance.collection('add_job').doc(docId).delete();
+  }
+
   Widget _buildJobCard(
     BuildContext context, {
-    required String jobType,
-    required String jobDate,
-    required String workingHour,
-    required String amount,
+    required String docId,
+    required String jobName,
+    required String place,
+    required DateTime workingDate,
+    required DateTime endingDate,
+    required String workingTime,
+    required String workingDays,
+    required double amount,
   }) {
     return GestureDetector(
       onTap: () {
         _navigateToViewPostedJobDetails(
-            context, jobType, jobDate, workingHour, amount);
+          context,
+          docId,
+          jobName,
+          place,
+          workingDate,
+          endingDate,
+          workingTime,
+          workingDays,
+          amount,
+        );
       },
       child: Card(
         color: const Color(0xFFF7F1E1),
@@ -81,31 +168,27 @@ class UserAddJob extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Expanded(
+                  Expanded(
                     child: Center(
                       child: Text(
-                        'Job Type',
-                        style: TextStyle(fontSize: 18.0),
+                        jobName,
+                        style: const TextStyle(fontSize: 18.0),
                       ),
                     ),
                   ),
                   IconButton(
                     onPressed: () {
-                      // Implement delete logic
+                      _showDeleteConfirmationDialog(context, docId);
                     },
                     icon: const Icon(Icons.delete),
-                    color: Colors.black, // Change icon color to black
+                    color: Colors.black,
                   ),
                 ],
               ),
               const SizedBox(height: 10.0),
-
-              // Spacing
               const SizedBox(height: 10.0),
-
-              // Job details
-              Text('Job Date: $jobDate'),
-              Text('Working Hour: $workingHour'),
+              Text('Job Date: ${DateFormat('dd-MM-yyyy').format(workingDate)}'),
+              Text('Working Hour: $workingTime'),
               Text('Amount: $amount'),
             ],
           ),

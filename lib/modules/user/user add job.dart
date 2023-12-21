@@ -2,6 +2,16 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
+class TimeOfDayRange {
+  final TimeOfDay startTime;
+  final TimeOfDay endTime;
+
+  TimeOfDayRange({
+    required this.startTime,
+    required this.endTime,
+  });
+}
+
 class AddJobPage extends StatefulWidget {
   const AddJobPage({Key? key}) : super(key: key);
 
@@ -12,9 +22,9 @@ class AddJobPage extends StatefulWidget {
 class _AddJobPageState extends State<AddJobPage> {
   DateTime? _workingDate;
   DateTime? _endingDate;
-  TimeOfDay? _workingTime;
+  TimeOfDayRange? _workingTime;
 
-  final TextEditingController _jobController = TextEditingController();
+  final TextEditingController _jobNameController = TextEditingController();
   final TextEditingController _placeController = TextEditingController();
   final TextEditingController _workingDaysController = TextEditingController();
   final TextEditingController _amountController = TextEditingController();
@@ -45,7 +55,7 @@ class _AddJobPageState extends State<AddJobPage> {
               ),
               const SizedBox(height: 10),
               TextFormField(
-                controller: _jobController,
+                controller: _jobNameController,
                 decoration: const InputDecoration(
                   labelText: 'Job',
                   border: OutlineInputBorder(),
@@ -137,13 +147,15 @@ class _AddJobPageState extends State<AddJobPage> {
                     filled: true,
                   ),
                   child: _workingTime != null
-                      ? Text(_workingTime!.format(context))
+                      ? Text(
+                          '${_workingTime!.startTime.format(context)} to ${_workingTime!.endTime.format(context)}',
+                        )
                       : const Text('Select Working Time'),
                 ),
               ),
               const SizedBox(height: 20),
               const Text(
-                'Ending Date',
+                'Working Days',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
@@ -154,7 +166,6 @@ class _AddJobPageState extends State<AddJobPage> {
                 controller: _workingDaysController,
                 keyboardType: TextInputType.number,
                 decoration: const InputDecoration(
-                  labelText: 'Working Days',
                   border: OutlineInputBorder(),
                   fillColor: Colors.white,
                   filled: true,
@@ -226,32 +237,39 @@ class _AddJobPageState extends State<AddJobPage> {
   }
 
   Future<void> _selectWorkingTime(BuildContext context) async {
-    TimeOfDay? pickedTime = await showTimePicker(
+    TimeOfDay? startTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.now(),
     );
-    if (pickedTime != null && pickedTime != _workingTime) {
-      setState(() {
-        _workingTime = pickedTime;
-      });
+
+    if (startTime != null) {
+      TimeOfDay? endTime = await showTimePicker(
+        context: context,
+        initialTime: startTime,
+      );
+
+      if (endTime != null) {
+        setState(() {
+          _workingTime = TimeOfDayRange(startTime: startTime, endTime: endTime);
+        });
+      }
     }
   }
 
   void _submitJob() async {
     try {
-      // Convert TimeOfDay to String
+      // Convert TimeOfDayRange to String
       String workingTimeStr = _workingTime != null
-          ? "${_workingTime!.hour}:${_workingTime!.minute}"
+          ? "${_workingTime!.startTime.format(context)} to ${_workingTime!.endTime.format(context)}"
           : "";
 
-      // Call the FirebaseService to add job data
       await jobsCollection.add({
-        'job': _jobController.text,
+        'jobName': _jobNameController.text,
         'place': _placeController.text,
         'workingDate': _workingDate,
         'endingDate': _endingDate,
         'workingTime': workingTimeStr,
-        'workingDays': int.tryParse(_workingDaysController.text) ?? 0,
+        'workingDays': _workingDaysController.text,
         'amount': double.tryParse(_amountController.text) ?? 0.0,
       });
 

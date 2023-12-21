@@ -1,7 +1,24 @@
 import 'package:flutter/material.dart';
 
 class UserviewJobapplication extends StatefulWidget {
-  const UserviewJobapplication({super.key});
+  const UserviewJobapplication({
+    Key? key,
+    required this.place,
+    required this.jobName,
+    required this.amount,
+    required this.workingDate,
+    required this.endingDate,
+    required this.workingTime,
+    required this.workingDays,
+  }) : super(key: key);
+
+  final String place;
+  final String jobName;
+  final String amount;
+  final String workingDate;
+  final String endingDate;
+  final String workingTime;
+  final String workingDays;
 
   @override
   State<UserviewJobapplication> createState() => _UserviewJobapplicationState();
@@ -22,17 +39,20 @@ class _UserviewJobapplicationState extends State<UserviewJobapplication> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 const SizedBox(height: 10),
-                const Text(
-                  'Job type',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+                Text(
+                  widget.jobName,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 30,
+                  ),
                 ),
                 const SizedBox(height: 20),
-                buildInfoRow('Place', 'Corresponding Place'),
-                buildInfoRow('Working Start date', 'Corresponding date'),
-                buildInfoRow('Working end date', 'Corresponding date'),
-                buildInfoRow('Working time', 'Corresponding time'),
-                buildInfoRow('Working days', 'Corresponding days'),
-                buildInfoRow('Payment', 'Corresponding Payment'),
+                buildInfoRow('Place', widget.place),
+                buildInfoRow('Working Date', widget.workingDate),
+                buildInfoRow('Ending Date', widget.endingDate),
+                buildInfoRow('Working Time', widget.workingTime),
+                buildInfoRow('Working Days', widget.workingDays),
+                buildInfoRow('Amount', '\$${widget.amount}'),
               ],
             ),
           ),
@@ -45,7 +65,7 @@ class _UserviewJobapplicationState extends State<UserviewJobapplication> {
           },
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.green,
-            fixedSize: const Size(200, 50), // Set the size of the button
+            fixedSize: const Size(200, 50),
           ),
           child: const Text('Apply'),
         ),
@@ -100,7 +120,7 @@ class _UsersendedApplicationState extends State<UsersendedApplication> {
                   jobType: 'Job Type',
                   postedDate: 'Posted Date',
                   postedBy: 'User Name',
-                  status: 'Available', // Change the status accordingly
+                  status: 'Available',
                 ),
               ],
             ),

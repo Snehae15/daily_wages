@@ -38,7 +38,6 @@ class JobApplicationPage extends StatelessWidget {
               'assets/person.png',
               context,
             ),
-            // Add more cards as needed
           ],
         ),
       ),
@@ -134,7 +133,8 @@ class UserAccepted extends StatelessWidget {
   final String location;
   final String imagePath;
 
-  const UserAccepted({super.key, 
+  const UserAccepted({
+    super.key,
     required this.name,
     required this.jobType,
     required this.location,
@@ -212,7 +212,8 @@ class UserAccepted extends StatelessWidget {
                       // Add logic for accepting the application
                     },
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.green,
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.green,
                     ),
                     child: const Text('Accept'),
                   ),
@@ -221,7 +222,8 @@ class UserAccepted extends StatelessWidget {
                       // Add logic for rejecting the application
                     },
                     style: ElevatedButton.styleFrom(
-                      foregroundColor: Colors.white, backgroundColor: Colors.red,
+                      foregroundColor: Colors.white,
+                      backgroundColor: Colors.red,
                     ),
                     child: const Text('Reject'),
                   ),

@@ -48,8 +48,11 @@ class _UserBottomNavigationState extends State<UserBottomNavigation> {
             label: 'Applications',
           ),
         ],
-        unselectedItemColor: const Color(0xFFF7F1E1),
+        unselectedItemColor: Color.fromARGB(255, 164, 151, 116),
         selectedItemColor: Colors.green,
+        selectedFontSize: 16.0, // Set the font size for the selected label
+        unselectedFontSize: 14.0, // Set the font size for the unselected labels
+        iconSize: 30.0, // Set the size of the icons
       ),
     );
   }

@@ -14,9 +14,9 @@ class UserProfileView extends StatefulWidget {
 class _UserProfileViewState extends State<UserProfileView> {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   final CollectionReference _userCollection =
-      FirebaseFirestore.instance.collection('user');
+      FirebaseFirestore.instance.collection('users');
 
-  late User _user;
+  late User? user;
   String _userName = '';
   String _phoneNumber = '';
   String _email = '';
@@ -27,29 +27,51 @@ class _UserProfileViewState extends State<UserProfileView> {
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _initializeUser();
+  }
+
+  Future<void> _initializeUser() async {
+    user = _auth.currentUser;
+
+    if (user != null) {
+      await _loadUserData();
+    } else {
+      // Handle the case where the user is not authenticated
+      print('User not authenticated');
+    }
   }
 
   Future<void> _loadUserData() async {
-    _user = _auth.currentUser!;
-    print("User ID: ${_user.uid}");
+    try {
+      print('User ID: ${user!.uid}');
+      final DocumentReference userDocumentRef = _userCollection.doc(user!.uid);
+      print('Document Path: ${userDocumentRef.path}');
+      final DocumentSnapshot userSnapshot = await userDocumentRef.get();
 
-    final DocumentSnapshot userSnapshot =
-        await _userCollection.doc(_user.uid).get();
+      // Check if the widget is still mounted before updating the state
+      if (mounted) {
+        if (userSnapshot.exists) {
+          setState(() {
+            _userName = userSnapshot['userName'];
+            _phoneNumber = userSnapshot['phoneNumber'] ?? 'N/A';
+            _email = userSnapshot['email'] ?? 'N/A';
+            _city = userSnapshot['city'] ?? 'N/A';
+            _address = userSnapshot['address'] ?? 'N/A';
+            _gender = userSnapshot['gender'] ?? 'N/A';
+          });
+        } else {
+          print('Document does not exist');
+        }
 
-    print("Document data: ${userSnapshot.data()}");
-
-    if (userSnapshot.exists) {
-      setState(() {
-        _userName = userSnapshot['userName'] ?? 'N/A';
-        _phoneNumber = userSnapshot['phoneNumber'] ?? 'N/A';
-        _email = userSnapshot['email'] ?? 'N/A';
-        _city = userSnapshot['city'] ?? 'N/A';
-        _address = userSnapshot['address'] ?? 'N/A';
-        _gender = userSnapshot['gender'] ?? 'N/A';
-      });
-    } else {
-      print('Document does not exist');
+        print('User Name: $_userName');
+        print('Phone Number: $_phoneNumber');
+        print('Email: $_email');
+        print('City: $_city');
+        print('Address: $_address');
+        print('Gender: $_gender');
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
     }
   }
 
@@ -131,21 +153,20 @@ class _UserProfileViewState extends State<UserProfileView> {
     );
   }
 
-  void _navigateToEditProfile() async {
-    final userDocument = await _userCollection.doc(_user.uid).get();
-
-    if (userDocument.exists) {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => EditProfilePage(
-            userId: 'userId',
-          ),
+  void _navigateToEditProfile() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => EditProfilePage(
+          userName: _userName,
+          phoneNumber: _phoneNumber,
+          email: _email,
+          city: _city,
+          address: _address,
+          gender: _gender,
         ),
-      );
-    } else {
-      print('Document does not exist');
-    }
+      ),
+    );
   }
 
   void _navigateToRequests() {
